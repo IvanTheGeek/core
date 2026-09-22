@@ -71,7 +71,7 @@ if (is_array($config['interfaces'])) {
                 unset($config['interfaces'][$ifname][$key]);
             }
         }
-        foreach (['enable', 'lock'] as $legacybool) {
+        foreach (['blockbogons', 'blockpriv', 'dhcp6-ia-pd-send-hint', 'dhcp6-information-only', 'dhcp6_norequest_dns', 'dhcp6_rapid_commit', 'dhcp6prefixonly', 'dhcpd6track6allowoverride', 'dhcphonourmtu', 'disablechecksumoffloading', 'disablelargereceiveoffloading', 'disablesegmentationoffloading', 'disablevlanhwfilter', 'enable', 'gateway_interface', 'hw_settings_overwrite', 'lock', 'promisc'] as $legacybool) {
             if (empty($pending[$legacybool])) {
                 unset($config['interfaces'][$ifname][$legacybool]);
             }
