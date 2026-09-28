@@ -44,18 +44,28 @@ class ServiceController extends ApiMutableServiceControllerBase
     protected static $internalServiceName = 'monit';
 
     /**
-     * reconfigure monit, report why it did not start
+     * reconfigure monit, report why it did not start or reload
      * @return array
      */
     public function reconfigureAction()
     {
+        if (!$this->request->isPost()) {
+            return parent::reconfigureAction();
+        }
+        $was_running = $this->statusAction()['status'] == 'running';
         $result = parent::reconfigureAction();
-        if ($this->request->isPost() && $this->serviceEnabled() && $this->statusAction()['status'] != 'running') {
-            /* monit refuses to start with an invalid control file, "monit check" tells why */
-            $result = [
-                'status' => 'failed',
-                'status_msg' => trim((new Backend())->configdRun('monit check')),
-            ];
+        if ($this->serviceEnabled()) {
+            $backend = new Backend();
+            if ($this->statusAction()['status'] != 'running') {
+                /* monit refuses to start with an invalid control file */
+                $failed = true;
+            } else {
+                /* rc refuses to reload an invalid control file, the running monit keeps the old one */
+                $failed = $was_running && trim($backend->configdRun('monit reload')) != 'OK';
+            }
+            if ($failed) {
+                $result = ['status' => 'failed', 'status_msg' => trim($backend->configdRun('monit check'))];
+            }
         }
         return $result;
     }
